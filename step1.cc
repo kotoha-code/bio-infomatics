@@ -107,7 +107,7 @@ int main(void){
             sequences.back() += line; 
         }
     }
-    vector<vector<double>> hitv(sequences.size(), vector<double>(sequences[0].size()-L,0.0)); 
+    vector<vector<double>> hitv(sequences.size(), vector<double>(sequences[0].size()-L+1,0.0)); 
 
     for(int num=0;num<sequences.size();num++){
         for(int i=0; i<=sequences[num].size()-L;i++){
@@ -128,9 +128,9 @@ int main(void){
         cout<<endl;
     }*/
 //課題３
-    int N_RANDOM=100;  //ランダム配列の本数
+    int N_RANDOM=10000;  //ランダム配列の本数
     int SEQ_LEN=500;    //プロモーター長
-    double P_VALUE=0.001; //p値
+    double P_VALUE=0.0004; //p値
 
     //q[0]=A, q[1]=C, q[2]=G, q[3]=T の確率で塩基を選ぶ
     mt19937 rng(42);
@@ -139,9 +139,7 @@ int main(void){
 
     //全ランダム配列のスコアを集める
     vector<double> all_scores;
-    cout << N_RANDOM*(SEQ_LEN-L+1) << endl;
-    all_scores.reserve(1000);
-    cout << "test2" << endl;
+    //all_scores.reserve(N_RANDOM * (SEQ_LEN-L+1));
 
     for(int r=0;r<N_RANDOM;r++) {
         //ランダム配列を1本生成
@@ -169,8 +167,10 @@ int main(void){
     //閾値を使って結合部位を判定
     cout<<"=== 結合部位予測 (閾値=" << threshold<< ") ===" << endl;
     for(int num=0; num<sequences.size(); num++) {
-        for(int i=0; i<hitv[num].size(); i++) {
-            if(hitv[num][i]>=threshold) {
+        for(int i=0; i<=hitv[num].size()-L; i++) {
+            if(hitv[num][i]>threshold) {
+                //string sub=seqs[num].substr(i,L);
+                //cout << filename[name] << " -> " << names[num]<< "  pos("<< sub<<")=" << i<< "  hit=" << hitv[num][i] << endl;
                 cout << filename[name] << " -> " << names[num]<< "  pos=" << i<< "  hit=" << hitv[num][i] << endl;
             }
         }
