@@ -169,9 +169,8 @@ int main(void){
     for(int num=0; num<sequences.size(); num++) {
         for(int i=0; i<=hitv[num].size()-L; i++) {
             if(hitv[num][i]>threshold) {
-                //string sub=seqs[num].substr(i,L);
-                //cout << filename[name] << " -> " << names[num]<< "  pos("<< sub<<")=" << i<< "  hit=" << hitv[num][i] << endl;
-                cout << filename[name] << " -> " << names[num]<< "  pos=" << i<< "  hit=" << hitv[num][i] << endl;
+                string sub=sequences[num].substr(i,L);
+                cout << filename[name] << " -> " << names[num]<< "  pos("<< sub<<")=" << i<< "  hit=" << hitv[num][i] << endl;
             }
         }
     }
