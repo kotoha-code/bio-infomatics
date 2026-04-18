@@ -157,11 +157,9 @@ int main(void){
 
     //スコアを昇順にソートする
     sort(all_scores.begin(),all_scores.end());
-
     //閾値を求める
     int threshold_idx=(int)(all_scores.size()*(1.0 - P_VALUE));
     double threshold=all_scores[threshold_idx];
-
     cout<<"閾値 (p="<<P_VALUE<<"): "<<threshold<<endl;
 
     //閾値を使って結合部位を判定
