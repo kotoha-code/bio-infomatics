@@ -8,19 +8,6 @@
 #include <random>
 using namespace std;
 
-
-vector<string> read_motif(string filename){
-    ifstream fin(filename);
-    vector<string> seqs;
-    string line;
-
-    while(getline(fin,line)){
-        if(line.size()==0) continue;
-        seqs.push_back(line);
-    }
-    return seqs;
-}
-
 int main(void){
  ifstream ist("data");
     if(!ist){
@@ -53,7 +40,6 @@ int main(void){
     }    
     double total;
     for(int i=0;i<count.size();i++){
-        //全モチーフに含まれている塩基数（ATGC順）
         cout<<count[i]<<" ";
         total+=count[i];
     }
