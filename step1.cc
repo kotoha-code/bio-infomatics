@@ -165,12 +165,11 @@ int main(void){
     cout<<"閾値 (p="<<P_VALUE<<"): "<<threshold<<endl;
 
     //閾値を使って結合部位を判定
-    cout<<"=== 結合部位予測 (閾値=" << threshold<< ") ===" << endl;
     for(int num=0; num<sequences.size(); num++) {
         for(int i=0; i<=hitv[num].size()-L; i++) {
             if(hitv[num][i]>threshold) {
                 string sub=sequences[num].substr(i,L);
-                cout << filename[name] << " -> " << names[num]<< "  pos("<< sub<<")=" << i<< "  hit=" << hitv[num][i] << endl;
+                cout << filename[name]<<" -> " << names[num]<< "  pos="<<i<<"  hit("<< sub<<")="<< hitv[num][i]<< endl;
             }
         }
     }
