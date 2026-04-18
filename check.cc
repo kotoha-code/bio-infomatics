@@ -30,19 +30,27 @@ int main(void){
 //塩基と対応するMapを作る
     map<char,int> idx = {{'A',0},{'C',1},{'G',2},{'T',3}};
 
-    vector<string> filename= {"MATa1", "MATalpha2", "MCM1", "MIG1", "PHO4", "RCS1", "ROX1", "TAF"};
     vector<double> count(4,0);
 
-    for(int name=0;name<8;name++){
-        vector<string> seqs= read_motif("data/motif/"+filename[name]);
-        int L = seqs[0].size();
-
-        for(int i=0;i<seqs.size();i++){
-            for(int j=0;j<L;j++){
-                count[idx[seqs[i][j]]]++;
-            }   
+    vector<string> names;
+    vector<string> sequences;
+    string line;
+    ifstream fin("data/seq/promoters");
+    while (getline(fin, line)) {
+        if (line[0] == '>') {
+            names.push_back(line.substr(1));
+            sequences.push_back(""); 
+        } else {
+            sequences.back() += line; 
         }
     }
+    int L = sequences[0].size();
+
+    for(int i=0;i<sequences.size();i++){
+        for(int j=0;j<L;j++){
+            count[idx[sequences[i][j]]]++;
+        }   
+    }    
     double total;
     for(int i=0;i<count.size();i++){
         //全モチーフに含まれている塩基数（ATGC順）
