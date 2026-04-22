@@ -11,10 +11,15 @@ using namespace std;
 #define NUM_FEATURES
 #define NUM_SEQS
 
-vector<string>LoadSolubilityFile(string filename,vector<string> feature_name, vector<vector<double>> dataset, vector<int> labels){
-    ifstream fin(filename);
+void LoadSolubilityFile(string filename,vector<string> feature_name, vector<vector<double>> dataset, vector<int> labels){
+    ifstream ifs(filename);
+    if(!ifs){
+        cerr << "Cannot open data" << endl;
+        exit(1);
+    }
     vector<string> seqs;
     string line;
+    getline 
 }
 
 vector<string>DivideDataset(vector<vector<double>> dataset,vector<int> labels, vector<vector<double>> training_dataset,vector<int> training_labels,vector<vector<double>> test_dataset,vector<int> test_labels,double test_ratio){
