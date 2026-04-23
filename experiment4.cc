@@ -78,18 +78,12 @@ void DivideDataset(vector<vector<double>>& dataset,vector<int>& labels, vector<v
     }
 }
 
-void Evaluation(TreeNode node,vector<vector<double>> test_dataset, vector<int> test_labels){
+void Evaluation(vector<vector<double>> test_dataset, vector<int> test_labels){
     int TP=0,FP=0,FN=0,TN=0;
-    for(int i=0;i<(int)test_dataset.size();i++){
-        //int predict=1;
-        int predict;
-        if(test_dataset[i][node.feature_id] <= node.threshold){
-            predict=node.left_class_id;
-        }else{
-            predict=node.right_class_id;
-        }
-        int actual=test_labels[i];
 
+    for(int i=0;i<(int)test_dataset.size();i++){
+        int predict=1;
+        int actual=test_labels[i];
         if(predict==1&&actual==1){
             TP++;
         }else if(predict==1&&actual==0){
@@ -105,7 +99,7 @@ void Evaluation(TreeNode node,vector<vector<double>> test_dataset, vector<int> t
     double accuracy=(double)(TP+TN)/total;
     double precision=(TP+FP>0)?(double)TP/(TP+FP):0.0;
     double recall=(TP + FN > 0)? (double)TP/(TP+FN):0.0;
-    double f_score=(precision + recall > 0)? 2.0*precision*recall/(precision+recall) :0.0;
+    double f_score=(precision + recall > 0)? 2.0*precision * recall/(precision+recall) :0.0;
 
     cout<<"Accuracy: "<< accuracy<<endl;
     cout<<"Precision: "<< precision<<endl;
@@ -129,9 +123,9 @@ double GiniImpurity(const vector<int>& x){
 
 // 重み付きジニ不純度
 double WeightedGini(const vector<int>& L,const vector<int>& R){
-    int nl=(int)L.size();
-    int nr=(int)R.size();
-    int n=nl+nr;
+    int nl =(int)L.size();
+    int nr = (int)R.size();
+    int n = nl+nr;
     if (n==0){
         return 0.0;
     }
@@ -145,21 +139,20 @@ void TrainDecisionNode(const vector<vector<double>>& dataset,const vector<int>& 
     for (int f = 0; f<NUM_FEATURES; f++){
         // 特徴量 f の値を昇順ソート → パーセンタイル計算に使う
         vector<double> vals(n);
-        for (int i=0; i<n; i++) vals[i] = dataset[i][f];
+        for (int i = 0; i < n; i++) vals[i] = dataset[i][f];
         sort(vals.begin(), vals.end());
 
         // 1〜99 パーセンタイルを候補閾値として評価（計 99 個）
-        for (int pct=1; pct<100; pct++) {
-            int idx = (int)(n*(double)pct/100.0);
+        for (int pct = 1; pct <= 99; pct++) {
+            int idx = (int)((double)pct / 100.0 * (n - 1));
             double thr = vals[idx];
+
             vector<int> left;
             vector<int> right;
-            for (int i=0; i<n; i++){
-                if (dataset[i][f] <= thr){
-                    left.push_back(labels[i]);
-                }else{
-                    right.push_back(labels[i]);
-                }                     
+
+            for (int i=0; i<n; i++) {
+                if (dataset[i][f] <= thr) left.push_back(labels[i]);
+                else                      right.push_back(labels[i]);
             }
 
             double g = WeightedGini(left, right);
@@ -176,7 +169,7 @@ void TrainDecisionNode(const vector<vector<double>>& dataset,const vector<int>& 
                 if(l1>=left.size()/2){
                     node.left_class_id=1;
                 }
-                int r1=count(right.begin(),right.end(),1);
+                int r1 =count(right.begin(),right.end(),1);
                 if(r1>=right.size()/2){
                     node.right_class_id=1;
                 }
@@ -185,81 +178,7 @@ void TrainDecisionNode(const vector<vector<double>>& dataset,const vector<int>& 
     }
 }
 
-void Evaluation(vector<TreeNode>& node,vector<vector<double>> test_dataset, vector<int> test_labels){
-    int TP=0,FP=0,FN=0,TN=0;
-    for(int i=0;i<(int)test_dataset.size();i++){
-        //int predict=1;
-        int predict;
-        
-        if(test_dataset[i][node[0].feature_id] <= node[0].threshold){
-
-            if(test_dataset[i][node[1].feature_id] <= node[1].threshold){
-                predict=node[1].left_class_id;
-            }else{
-                predict=node[1].right_class_id;
-            }
-        }else{
-
-            if(test_dataset[i][node[2].feature_id] <= node[2].threshold){
-                predict=node[2].left_class_id;
-            }else{
-                predict=node[2].right_class_id;
-            }
-        } 
-        int actual=test_labels[i];
-
-        if(predict==1&&actual==1){
-            TP++;
-        }else if(predict==1&&actual==0){
-            FP++;
-        }else if(predict==0&&actual==1){
-            FN++;
-        }else{
-            TN++;
-        }
-    }
-
-    int total= TP+FP+FN+TN;
-    double accuracy=(double)(TP+TN)/total;
-    double precision=(TP+FP>0)?(double)TP/(TP+FP):0.0;
-    double recall=(TP + FN > 0)? (double)TP/(TP+FN):0.0;
-    double f_score=(precision + recall > 0)? 2.0*precision*recall/(precision+recall) :0.0;
-
-    cout<<"Accuracy: "<< accuracy<<endl;
-    cout<<"Precision: "<< precision<<endl;
-    cout<<"Recall: "<< recall<<endl;
-    cout<<"F-score: "<< f_score<<endl;
-    cout<<"Confusion Matrix\n";
-    cout<<"TP: "<<TP<<"  FP: "<<FP<<"\n";
-    cout<<"FN: "<<FN<<"  TN: "<<TN<<"\n";
-    
-}
-
-void TrainDecisionTree(const vector<vector<double>>& dataset,const vector<int>& labels,vector<TreeNode>& tree){
-    TrainDecisionNode(dataset,labels,tree[0]);
-
-    vector<vector<double>>left_dataset,right_dataset;
-    vector<int>left_label,right_label;
-
-    for(int i=0;i<dataset.size();i++){
-        if(dataset[i][tree[0].feature_id] <= tree[0].threshold){
-            left_dataset.push_back(dataset[i]);
-            left_label.push_back(labels[i]);
-        }else{
-            right_dataset.push_back(dataset[i]);
-            right_label.push_back(labels[i]);
-        }
-    }
-    
-    TrainDecisionNode(dataset,labels,tree[1]);
-    TrainDecisionNode(dataset,labels,tree[2]);
-}
-
 int main(void){
-    /*TreeNode decision_tree1;
-    TreeNode decision_tree2;
-    TreeNode decision_tree3;*/
-
     vector<string> feature_name(NUM_FEATURES, "");
     vector<vector<double>> dataset(NUM_SEQS, vector<double>(NUM_FEATURES,0.0));
     vector<int>labels(NUM_SEQS);
@@ -273,20 +192,18 @@ int main(void){
     double test_ratio=0.2;
 
     DivideDataset(dataset,labels,training_dataset,training_labels,test_dataset,test_labels,test_ratio);
-   
-    vector<TreeNode> decision_tree(3);
-    /*decision_tree[0]=decision_tree1;
-    decision_tree[1]=decision_tree2;
-    decision_tree[2]=decision_tree3;*/
 
+    Evaluation(test_dataset, test_labels);
 
+    cout<<GiniImpurity(labels)<<endl;
 
-    TrainDecisionTree(training_dataset,training_labels,decision_tree);
-            cout<<decision_tree.size()<<endl;
+    TreeNode decision_tree;
+    TrainDecisionNode(dataset,labels,decision_tree);
+    cout<< decision_tree.feature_id<<" "<<decision_tree.threshold<<" "<<decision_tree.left_class_id<<" "<<decision_tree.right_class_id<<endl;
 
-    Evaluation(decision_tree,test_dataset,test_labels);
-
-
+    vector<TreeNode> decision_tree2(3);
+    TrainDecisionTree(training_dataset, training_labels, decision_tree2);
+    Evaluation(decision_tree2, test_dataset, test_labels);
     return 0;
 
 }
