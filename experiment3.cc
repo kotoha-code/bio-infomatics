@@ -73,7 +73,7 @@ void DivideDataset(vector<vector<double>>& dataset,vector<int>& labels, vector<v
     }
     //残りをトレーニング用に格納
     for(int i=testsize;i<(int)dataset.size();i++){
-        training_dataset.push_back(dataset[i]);
+        training_dataset.push_back(dataset[indices[i]]);
         training_labels.push_back(labels[indices[i]]);
     }
 }
@@ -251,8 +251,8 @@ void TrainDecisionTree(const vector<vector<double>>& dataset,const vector<int>& 
         }
     }
     
-    TrainDecisionNode(dataset,labels,tree[1]);
-    TrainDecisionNode(dataset,labels,tree[2]);
+    TrainDecisionNode(left_dataset,left_label,tree[1]);
+    TrainDecisionNode(right_dataset,right_label,tree[2]);
 }
 
 int main(void){

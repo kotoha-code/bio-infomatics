@@ -21,6 +21,7 @@ struct TreeNode {
 
 void LoadSolubilityFile(string filename,vector<string>& feature_name, vector<vector<double>>& dataset, vector<int>& labels){
     ifstream ifs(filename);
+
     if(!ifs){
         cerr << "Cannot open data" << endl;
         return;
@@ -73,7 +74,7 @@ void DivideDataset(vector<vector<double>>& dataset,vector<int>& labels, vector<v
     }
     //残りをトレーニング用に格納
     for(int i=testsize;i<(int)dataset.size();i++){
-        training_dataset.push_back(dataset[i]);
+        training_dataset.push_back(dataset[indices[i]]);
         training_labels.push_back(labels[indices[i]]);
     }
 }
@@ -201,9 +202,6 @@ int main(void){
     TrainDecisionNode(dataset,labels,decision_tree);
     cout<< decision_tree.feature_id<<" "<<decision_tree.threshold<<" "<<decision_tree.left_class_id<<" "<<decision_tree.right_class_id<<endl;
 
-    vector<TreeNode> decision_tree2(3);
-    TrainDecisionTree(training_dataset, training_labels, decision_tree2);
-    Evaluation(decision_tree2, test_dataset, test_labels);
     return 0;
 
 }
