@@ -275,17 +275,15 @@ int main(void){
     DivideDataset(dataset,labels,training_dataset,training_labels,test_dataset,test_labels,test_ratio);
    
     vector<TreeNode> decision_tree(3);
-    /*decision_tree[0]=decision_tree1;
-    decision_tree[1]=decision_tree2;
-    decision_tree[2]=decision_tree3;*/
-
-
 
     TrainDecisionTree(training_dataset,training_labels,decision_tree);
-            cout<<decision_tree.size()<<endl;
+    cout<<decision_tree.size()<<endl;
 
     Evaluation(decision_tree,test_dataset,test_labels);
 
+    cout<<feature_name[decision_tree[0].feature_id]<<" : "<<decision_tree[0].feature_id<<" "<<decision_tree[0].threshold<<" "<<decision_tree[0].left_class_id<<" "<<decision_tree[0].right_class_id<<endl;
+    cout<<feature_name[decision_tree[1].feature_id]<<" : "<< decision_tree[1].feature_id<<" "<<decision_tree[1].threshold<<" "<<decision_tree[1].left_class_id<<" "<<decision_tree[1].right_class_id<<endl;
+    cout<<feature_name[decision_tree[2].feature_id]<<" : "<< decision_tree[2].feature_id<<" "<<decision_tree[2].threshold<<" "<<decision_tree[2].left_class_id<<" "<<decision_tree[2].right_class_id<<endl;
 
     return 0;
 

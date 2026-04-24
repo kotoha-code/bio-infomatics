@@ -81,10 +81,28 @@ void DivideDataset(vector<vector<double>>& dataset,vector<int>& labels, vector<v
 
 void Evaluation(vector<vector<double>> test_dataset, vector<int> test_labels){
     int TP=0,FP=0,FN=0,TN=0;
-    
-    for(int i=0;i<(int)test_dataset.size();i++){
-        int predict=1;
+
+   for(int i=0;i<(int)test_dataset.size();i++){
+        //int predict=1;
+        int predict;
+        
+        if(test_dataset[i][node[0].feature_id] <= node[0].threshold){
+
+            if(test_dataset[i][node[1].feature_id] <= node[1].threshold){
+                predict=node[1].left_class_id;
+            }else{
+                predict=node[1].right_class_id;
+            }
+        }else{
+
+            if(test_dataset[i][node[2].feature_id] <= node[2].threshold){
+                predict=node[2].left_class_id;
+            }else{
+                predict=node[2].right_class_id;
+            }
+        } 
         int actual=test_labels[i];
+
         if(predict==1&&actual==1){
             TP++;
         }else if(predict==1&&actual==0){
@@ -101,44 +119,6 @@ void Evaluation(vector<vector<double>> test_dataset, vector<int> test_labels){
     double precision=(TP+FP>0)?(double)TP/(TP+FP):0.0;
     double recall=(TP + FN > 0)? (double)TP/(TP+FN):0.0;
     double f_score=(precision + recall > 0)? 2.0*precision * recall/(precision+recall) :0.0;
-
-    cout<<"Accuracy: "<< accuracy<<endl;
-    cout<<"Precision: "<< precision<<endl;
-    cout<<"Recall: "<< recall<<endl;
-    cout<<"F-score: "<< f_score<<endl;
-    cout<<"Confusion Matrix\n";
-    cout<<"TP: "<<TP<<"  FP: "<<FP<<"\n";
-    cout<<"FN: "<<FN<<"  TN: "<<TN<<"\n";
-    
-}
-
-void Evaluation(TreeNode node,vector<vector<double>> test_dataset, vector<int> test_labels){
-    int TP=0,FP=0,FN=0,TN=0;
-    for(int i=0;i<(int)test_dataset.size();i++){
-        int predict;
-        if(test_dataset[i][node.feature_id] <= node.threshold){
-            predict=node.left_class_id;
-        }else{
-            predict=node.right_class_id;
-        }
-        int actual=test_labels[i];
-
-        if(predict==1&&actual==1){
-            TP++;
-        }else if(predict==1&&actual==0){
-            FP++;
-        }else if(predict==0&&actual==1){
-            FN++;
-        }else{
-            TN++;
-        }
-    }
-
-    int total= TP+FP+FN+TN;
-    double accuracy=(double)(TP+TN)/total;
-    double precision=(TP+FP>0)?(double)TP/(TP+FP):0.0;
-    double recall=(TP + FN > 0)? (double)TP/(TP+FN):0.0;
-    double f_score=(precision + recall > 0)? 2.0*precision*recall/(precision+recall) :0.0;
 
     cout<<"Accuracy: "<< accuracy<<endl;
     cout<<"Precision: "<< precision<<endl;
@@ -176,12 +156,12 @@ void TrainDecisionNode(const vector<vector<double>>& dataset,const vector<int>& 
     double best_gini =1e18; //最小値を求めたいので初期値を大きく設定
 
     for (int f = 0; f<NUM_FEATURES; f++){
-        // 特徴量fをパーセンタイル計算用に昇順ソート
+        // 特徴量 f の値を昇順ソート → パーセンタイル計算に使う
         vector<double> vals(n);
         for (int i = 0; i < n; i++) vals[i] = dataset[i][f];
         sort(vals.begin(), vals.end());
 
-        // 1〜99パーセンタイルを候補閾値として評価
+        // 1〜99 パーセンタイルを候補閾値として評価（計 99 個）
         for (int pct = 1; pct <= 99; pct++) {
             int idx = (int)((double)pct / 100.0 * (n - 1));
             double thr = vals[idx];
@@ -231,15 +211,14 @@ int main(void){
     double test_ratio=0.2;
 
     DivideDataset(dataset,labels,training_dataset,training_labels,test_dataset,test_labels,test_ratio);
+
     Evaluation(test_dataset, test_labels);
 
     cout<<GiniImpurity(labels)<<endl;
 
     TreeNode decision_tree;
     TrainDecisionNode(dataset,labels,decision_tree);
-    Evaluation(decision_tree,test_dataset,test_labels);
-
-    cout<<feature_name[decision_tree.feature_id]<<" "<< decision_tree.feature_id<<" "<<decision_tree.threshold<<" "<<decision_tree.left_class_id<<" "<<decision_tree.right_class_id<<endl;
+    cout<< decision_tree.feature_id<<" "<<decision_tree.threshold<<" "<<decision_tree.left_class_id<<" "<<decision_tree.right_class_id<<endl;
 
     return 0;
 
