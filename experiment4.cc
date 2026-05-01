@@ -13,15 +13,14 @@ using namespace std;
 #define NUM_SEQS 10000
 
 struct TreeNode {
-    int    feature_id;    // 分岐に使う特徴量のインデックス
-    double threshold;     // 分岐閾値（以下なら左、超えたら右）
+    int    feature_id;    // 分岐の特徴量のインデックス
+    double threshold;     // 閾値（以下なら左、超えたら右）
     int    left_class_id; // 左に落ちたデータの予測ラベル
     int    right_class_id;// 右に落ちたデータの予測ラベル
 };
 
 void LoadSolubilityFile(string filename,vector<string>& feature_name, vector<vector<double>>& dataset, vector<int>& labels){
     ifstream ifs(filename);
-
     if(!ifs){
         cerr << "Cannot open data" << endl;
         return;
@@ -42,12 +41,10 @@ void LoadSolubilityFile(string filename,vector<string>& feature_name, vector<vec
     for(int i=1; i<=NUM_FEATURES; i++){
         feature_name[i-1]=headers[i];
     }
-
     int row=0;
     while(getline(ifs,line)&&row<NUM_SEQS){
         istringstream ss(line); //読んだ行をstreamに変換
         getline(ss,temp,' ');  //protein idは使わないから捨てる
-
         for(int i=0;i<NUM_FEATURES;i++){
             getline(ss,temp,' ');
             dataset[row][i]=stod(temp); //stod=文字列から少数に変換する
@@ -58,6 +55,7 @@ void LoadSolubilityFile(string filename,vector<string>& feature_name, vector<vec
     }
 }
 
+//テストデータとトレーニングデータを分ける
 void DivideDataset(vector<vector<double>>& dataset,vector<int>& labels, vector<vector<double>>& training_dataset,vector<int>& training_labels,vector<vector<double>>& test_dataset,vector<int>& test_labels,double test_ratio){
     //インデックス配列作る
     vector<int>indices(dataset.size());
@@ -65,7 +63,6 @@ void DivideDataset(vector<vector<double>>& dataset,vector<int>& labels, vector<v
     //シャッフル
     mt19937 gen(0);
     shuffle(indices.begin(),indices.end(),gen);
-
     //データセットの先頭20%をテスト用に格納
     int testsize=(int)(dataset.size()*test_ratio);
     for(int i=0;i<testsize;i++){
@@ -79,6 +76,7 @@ void DivideDataset(vector<vector<double>>& dataset,vector<int>& labels, vector<v
     }
 }
 
+//全て可溶だと仮定したときの評価関数
 void Evaluation(vector<vector<double>> test_dataset, vector<int> test_labels){
     int TP=0,FP=0,FN=0,TN=0;
     
@@ -100,23 +98,23 @@ void Evaluation(vector<vector<double>> test_dataset, vector<int> test_labels){
     double accuracy=(double)(TP+TN)/total;
     double precision=(TP+FP>0)?(double)TP/(TP+FP):0.0;
     double recall=(TP + FN > 0)? (double)TP/(TP+FN):0.0;
-    double f_score=(precision + recall > 0)? 2.0*precision * recall/(precision+recall) :0.0;
+    double f_score=(precision + recall>0)? 2.0*precision * recall/(precision+recall) :0.0;
 
-    cout<<"Accuracy: "<< accuracy<<endl;
-    cout<<"Precision: "<< precision<<endl;
-    cout<<"Recall: "<< recall<<endl;
-    cout<<"F-score: "<< f_score<<endl;
+    cout<<"Accuracy: "<<accuracy<<endl;
+    cout<<"Precision: "<<precision<<endl;
+    cout<<"Recall: "<<recall<<endl;
+    cout<<"F-score: "<<f_score<<endl;
     cout<<"Confusion Matrix\n";
     cout<<"TP: "<<TP<<"  FP: "<<FP<<"\n";
     cout<<"FN: "<<FN<<"  TN: "<<TN<<"\n";
     
 }
-
+//リアルな評価関数
 void Evaluation(TreeNode node,vector<vector<double>> test_dataset, vector<int> test_labels){
     int TP=0,FP=0,FN=0,TN=0;
     for(int i=0;i<(int)test_dataset.size();i++){
         int predict;
-        if(test_dataset[i][node.feature_id] <= node.threshold){
+        if(test_dataset[i][node.feature_id]<=node.threshold){
             predict=node.left_class_id;
         }else{
             predict=node.right_class_id;
@@ -171,6 +169,7 @@ double WeightedGini(const vector<int>& L,const vector<int>& R){
     return (double)nl/n * GiniImpurity(L)+(double)nr/n * GiniImpurity(R);
 }
 
+//深さ１の決定木用学習関数
 void TrainDecisionNode(const vector<vector<double>>& dataset,const vector<int>& labels,TreeNode& node){
     int n=dataset.size();
     double best_gini =1e18; //最小値を求めたいので初期値を大きく設定
@@ -185,17 +184,17 @@ void TrainDecisionNode(const vector<vector<double>>& dataset,const vector<int>& 
         for (int pct = 1; pct <= 99; pct++) {
             int idx = (int)((double)pct / 100.0 * (n - 1));
             double thr = vals[idx];
-
             vector<int> left;
             vector<int> right;
-
             for (int i=0; i<n; i++) {
-                if (dataset[i][f] <= thr) left.push_back(labels[i]);
-                else                      right.push_back(labels[i]);
+                if (dataset[i][f]<=thr){
+                    left.push_back(labels[i]);
+                }else{
+                    right.push_back(labels[i]);
+                }
             }
-
-            double g = WeightedGini(left, right);
-
+            
+            double g=WeightedGini(left, right);
             if (g < best_gini) {
                 best_gini = g;
                 node.feature_id = f;
@@ -223,22 +222,18 @@ int main(void){
     vector<int>labels(NUM_SEQS);
 
     LoadSolubilityFile("protein_solubility_dataset.txt",feature_name,dataset,labels);
-
     vector<vector<double>>training_dataset;
     vector<int>training_labels;
     vector<vector<double>>test_dataset;
     vector<int>test_labels;
     double test_ratio=0.2;
-
     DivideDataset(dataset,labels,training_dataset,training_labels,test_dataset,test_labels,test_ratio);
+    
     Evaluation(test_dataset, test_labels);
-
-    cout<<GiniImpurity(labels)<<endl;
 
     TreeNode decision_tree;
     TrainDecisionNode(dataset,labels,decision_tree);
     Evaluation(decision_tree,test_dataset,test_labels);
-
     cout<<feature_name[decision_tree.feature_id]<<" "<< decision_tree.feature_id<<" "<<decision_tree.threshold<<" "<<decision_tree.left_class_id<<" "<<decision_tree.right_class_id<<endl;
 
     return 0;
