@@ -155,18 +155,18 @@ void Evaluation(vector<TreeNode>& node,vector<vector<double>> test_dataset, vect
     for(int i=0;i<(int)test_dataset.size();i++){
         int predict;
 
-        if(test_dataset[i][node[0].feature_id] <= node[0].threshold){
+        if(test_dataset[i][node[0].feature_id]<=node[0].threshold){
             // 左[1]へ
-            if(test_dataset[i][node[1].feature_id] <= node[1].threshold){
+            if(test_dataset[i][node[1].feature_id]<=node[1].threshold){
                 // 左[3]へ
-                if(test_dataset[i][node[3].feature_id] <= node[3].threshold){
+                if(test_dataset[i][node[3].feature_id]<=node[3].threshold){
                     predict=node[3].left_class_id;
                 }else{
                     predict=node[3].right_class_id;
                 }
             }else{
                 // 右[4]へ
-                if(test_dataset[i][node[4].feature_id] <= node[4].threshold){
+                if(test_dataset[i][node[4].feature_id]<=node[4].threshold){
                     predict=node[4].left_class_id;
                 }else{
                     predict=node[4].right_class_id;
@@ -174,16 +174,16 @@ void Evaluation(vector<TreeNode>& node,vector<vector<double>> test_dataset, vect
             }
         }else{
             // 右[2]へ
-            if(test_dataset[i][node[2].feature_id] <= node[2].threshold){
+            if(test_dataset[i][node[2].feature_id]<=node[2].threshold){
                 // 左[5]へ
-                if(test_dataset[i][node[5].feature_id] <= node[5].threshold){
+                if(test_dataset[i][node[5].feature_id]<=node[5].threshold){
                     predict=node[5].left_class_id;
                 }else{
                     predict=node[5].right_class_id;
                 }
             }else{
                 // 右[6]へ
-                if(test_dataset[i][node[6].feature_id] <= node[6].threshold){
+                if(test_dataset[i][node[6].feature_id]<=node[6].threshold){
                     predict=node[6].left_class_id;
                 }else{
                     predict=node[6].right_class_id;
@@ -202,8 +202,6 @@ void Evaluation(vector<TreeNode>& node,vector<vector<double>> test_dataset, vect
             TN++;
         }
     }
-
-
     int total= TP+FP+FN+TN;
     double accuracy=(double)(TP+TN)/total;
     double precision=(TP+FP>0)?(double)TP/(TP+FP):0.0;
@@ -214,42 +212,20 @@ void Evaluation(vector<TreeNode>& node,vector<vector<double>> test_dataset, vect
     cout<<"Precision: "<< precision<<endl;
     cout<<"Recall: "<< recall<<endl;
     cout<<"F-score: "<< f_score<<endl;
-    cout<<"Confusion Matrix\n";
+    cout<<"Confusion Matrix"<<endl;
     cout<<"TP: "<<TP<<"  FP: "<<FP<<"\n";
     cout<<"FN: "<<FN<<"  TN: "<<TN<<"\n";
     
 }
-
-//深さ２用の決定木学習関数
-/*void TrainDecisionTree(const vector<vector<double>>& dataset,const vector<int>& labels,vector<TreeNode>& tree){
-    TrainDecisionNode(dataset,labels,tree[0]);
-
-    vector<vector<double>>left_dataset,right_dataset;
-    vector<int>left_label,right_label;
-
-    for(int i=0;i<dataset.size();i++){
-        if(dataset[i][tree[0].feature_id] <= tree[0].threshold){
-            left_dataset.push_back(dataset[i]);
-            left_label.push_back(labels[i]);
-        }else{
-            right_dataset.push_back(dataset[i]);
-            right_label.push_back(labels[i]);
-        }
-    }
-    
-    TrainDecisionNode(left_dataset,left_label,tree[1]);
-    TrainDecisionNode(right_dataset,right_label,tree[2]);
-}*/
-
-//深さ３
+//深さ３用
 void TrainDecisionTree(const vector<vector<double>>& dataset,const vector<int>& labels,vector<TreeNode>& tree){
     TrainDecisionNode(dataset,labels,tree[0]);
-
+    
+    //一つ目の分岐でそれぞれ配列
     vector<vector<double>>left1,right1;
     vector<int>left1_label,right1_label;
-
     for(int i=0;i<dataset.size();i++){
-        if(dataset[i][tree[0].feature_id] <= tree[0].threshold){
+        if(dataset[i][tree[0].feature_id]<=tree[0].threshold){
             left1.push_back(dataset[i]);
             left1_label.push_back(labels[i]);
         }else{
@@ -259,48 +235,45 @@ void TrainDecisionTree(const vector<vector<double>>& dataset,const vector<int>& 
     }
     TrainDecisionNode(left1,left1_label,tree[1]);
     TrainDecisionNode(right1,right1_label,tree[2]);
-
-    vector<vector<double>> left2, right2;
-    vector<int> left2_label, right2_label;
-
-    for (int i = 0; i < left1.size(); i++) {
-        if (left1[i][tree[1].feature_id] <= tree[1].threshold) {
+    
+    //二つ目の分岐の右側
+    vector<vector<double>> left2,right2;
+    vector<int> left2_label,right2_label;
+    for (int i=0; i<left1.size();i++) {
+        if(left1[i][tree[1].feature_id]<=tree[1].threshold) {
             left2.push_back(left1[i]);
             left2_label.push_back(left1_label[i]);
-        } else {
+        }else{
             right2.push_back(left1[i]);
             right2_label.push_back(left1_label[i]);
         }
     }
-    TrainDecisionNode(left2, left2_label, tree[3]);
-    TrainDecisionNode(right2, right2_label, tree[4]);
+    TrainDecisionNode(left2,left2_label,tree[3]);
+    TrainDecisionNode(right2,right2_label,tree[4]);
+    
+    //二つ目の分岐の右側
+    vector<vector<double>> left3,right3;
+    vector<int> left3_label,right3_label;
 
-    // --- [2]のデータをさらに左右に分割 → [5][6] ---
-    vector<vector<double>> left3, right3;
-    vector<int> left3_label, right3_label;
-
-    for (int i = 0; i < right1.size(); i++) {
-        if (right1[i][tree[2].feature_id] <= tree[2].threshold) {
+    for(int i=0; i<right1.size();i++){
+        if(right1[i][tree[2].feature_id]<=tree[2].threshold) {
             left3.push_back(right1[i]);
             left3_label.push_back(right1_label[i]);
-        } else {
+        }else{
             right3.push_back(right1[i]);
             right3_label.push_back(right1_label[i]);
         }
     }
-    TrainDecisionNode(left3, left3_label, tree[5]);
-    TrainDecisionNode(right3, right3_label, tree[6]);
+    TrainDecisionNode(left3,left3_label,tree[5]);
+    TrainDecisionNode(right3,right3_label,tree[6]);
 
 }
 
 int main(void){
-
     vector<string> feature_name(NUM_FEATURES, "");
     vector<vector<double>> dataset(NUM_SEQS, vector<double>(NUM_FEATURES,0.0));
     vector<int>labels(NUM_SEQS);
-
     LoadSolubilityFile("protein_solubility_dataset.txt",feature_name,dataset,labels);
-
     vector<vector<double>>training_dataset;
     vector<int>training_labels;
     vector<vector<double>>test_dataset;
@@ -312,7 +285,6 @@ int main(void){
     vector<TreeNode> decision_tree(7);
 
     TrainDecisionTree(training_dataset,training_labels,decision_tree);
-
     Evaluation(decision_tree,test_dataset,test_labels);
 
     cout<<"①特徴量 "<<feature_name[decision_tree[0].feature_id]<<" : "<<decision_tree[0].feature_id<<" 閾値 "<<decision_tree[0].threshold<<" "<<decision_tree[0].left_class_id<<" "<<decision_tree[0].right_class_id<<endl;
