@@ -101,7 +101,7 @@ double WeightedGini(const vector<int>& L,const vector<int>& R){
     return (double)nl/n*GiniImpurity(L)+(double)nr/n*GiniImpurity(R);
 }
 
-//深さ１の決定木学習関数
+//深さ１の決定木学習関数(TrainDicisionTreeでも使う)
 void TrainDecisionNode(const vector<vector<double>>& dataset,const vector<int>& labels,TreeNode& node){
     int n=dataset.size();
     double best_gini =1e18; //最小値を求めたいので初期値を大きく設定
@@ -203,7 +203,7 @@ void Evaluation(vector<TreeNode>& node,vector<vector<double>> test_dataset, vect
 //深さ２用の決定木学習関数
 void TrainDecisionTree(const vector<vector<double>>& dataset,const vector<int>& labels,vector<TreeNode>& tree){
     TrainDecisionNode(dataset,labels,tree[0]);
-
+　　//左と右で新しく配列作ってそれぞれにTrainDecisionNodeする
     vector<vector<double>>left_dataset,right_dataset;
     vector<int>left_label,right_label;
 
@@ -216,19 +216,15 @@ void TrainDecisionTree(const vector<vector<double>>& dataset,const vector<int>& 
             right_label.push_back(labels[i]);
         }
     }
-    
     TrainDecisionNode(left_dataset,left_label,tree[1]);
     TrainDecisionNode(right_dataset,right_label,tree[2]);
 }
 
 int main(void){
-
     vector<string> feature_name(NUM_FEATURES, "");
     vector<vector<double>> dataset(NUM_SEQS, vector<double>(NUM_FEATURES,0.0));
     vector<int>labels(NUM_SEQS);
-
     LoadSolubilityFile("protein_solubility_dataset.txt",feature_name,dataset,labels);
-
     vector<vector<double>>training_dataset;
     vector<int>training_labels;
     vector<vector<double>>test_dataset;
@@ -240,13 +236,11 @@ int main(void){
     vector<TreeNode> decision_tree(3);
 
     TrainDecisionTree(training_dataset,training_labels,decision_tree);
-    cout<<decision_tree.size()<<endl;
-
     Evaluation(decision_tree,test_dataset,test_labels);
 
-    cout<<"①特徴量 "<<feature_name[decision_tree[0].feature_id]<<" : "<<decision_tree[0].feature_id<<" 閾値 "<<decision_tree[0].threshold<<" "<<decision_tree[0].left_class_id<<" "<<decision_tree[0].right_class_id<<endl;
-    cout<<"②特徴量 "<<feature_name[decision_tree[1].feature_id]<<" : "<< decision_tree[1].feature_id<<" 閾値 "<<decision_tree[1].threshold<<" "<<decision_tree[1].left_class_id<<" "<<decision_tree[1].right_class_id<<endl;
-    cout<<"③特徴量 "<<feature_name[decision_tree[2].feature_id]<<" : "<< decision_tree[2].feature_id<<" 閾値 "<<decision_tree[2].threshold<<" "<<decision_tree[2].left_class_id<<" "<<decision_tree[2].right_class_id<<endl;
+    cout<<"特徴量 "<<feature_name[decision_tree[0].feature_id]<<" : "<<decision_tree[0].feature_id<<" 閾値 "<<decision_tree[0].threshold<<" "<<decision_tree[0].left_class_id<<" "<<decision_tree[0].right_class_id<<endl;
+    cout<<"特徴量 "<<feature_name[decision_tree[1].feature_id]<<" : "<< decision_tree[1].feature_id<<" 閾値 "<<decision_tree[1].threshold<<" "<<decision_tree[1].left_class_id<<" "<<decision_tree[1].right_class_id<<endl;
+    cout<<"特徴量 "<<feature_name[decision_tree[2].feature_id]<<" : "<< decision_tree[2].feature_id<<" 閾値 "<<decision_tree[2].threshold<<" "<<decision_tree[2].left_class_id<<" "<<decision_tree[2].right_class_id<<endl;
 
     return 0;
 
